@@ -29,8 +29,7 @@ def is_matrix(m) -> bool:
         
     return True
 
-
-def makemat(nlist) -> matrix:
+def makemat(nlist):
     """
     Used for making a matrix object. Should be the
     only funtion called to instantiate a matrix object
@@ -44,7 +43,6 @@ def makemat(nlist) -> matrix:
 
     assert is_matrix(nlist), "Not a valid matrix format"
     return matrix(nlist)
-
 
 class matrix():
     """
@@ -125,7 +123,7 @@ class matrix():
                 prod = prod + m.content[x][y] * self.content[x][y]
         return prod
 
-    def multiply(self, m) -> matrix:
+    def multiply(self, m):
         """
         Calculates the matrix product of self and m.
         self.ncols must equal m.nrows.
@@ -141,11 +139,20 @@ class matrix():
         New matrix object
         """
 
-        # result = []
-        # for x in 
-        pass
+        assert self.ncols == m.nrows 
+        result = []
+
+        n = m.transpose()
+        for y in range(self.nrows):
+            result.append([])
+            for ny in range(n.nrows):
+                entry = 0
+                for nx in range(n.ncols):
+                    entry += self.content[y][nx] * n.content[ny][nx]
+                result[y].append(entry)
+        return makemat(result)
     
-    def transpose(self) -> matrix:
+    def transpose(self):
         """
         Creates a new matrix that is the transposed matrix of self
         and returns is
@@ -156,7 +163,118 @@ class matrix():
         Returns:
         A new matrix object
         """
+        if self.content == [[]]:
+            return makemat([[]])
+        result = []
+        for y in range(self.ncols):
+            result.append([])
+            for x in range(self.nrows):
+                result[y].append(self.content[x][y])
+        return makemat(result)
+
+    def extract_col(self, ncol):
+        """
+        Extract a single column out of non-empty matrix object
+        NOTE: 1-INDEXED
+
+        Parameters:
+        self: a matrix object
+        ncol: column number(1-indexed)
+
+        Returns:
+        a new matrix index with dimension n x 1
+        """
+
+        assert ncol <= self.ncols
+        result = []
+        for x in range(self.nrows):
+            result.append([self.content[x][ncol-1]])
+
+        return makemat(result)
+
+    def extract_row(self, nrow):
+        """
+        Extract a single row out of non-empty matrix object
+        NOTE: 1-INDEXED
+
+        Parameters:
+        self: a matrix object
+        nrow: row number(1-indexed)
+
+        Returns:
+        a new matrix index with dimension 1 x n
+        """
+
+        assert nrow <= self.nrows
+        return makemat([self.content[nrow-1]])
+    
+    def invert(self):
+        """
+        Creates inverse matrix, if it exists
+        Raises error otherwise
+
+        Parameters: 
+        self: a matrix object
+
+        Returns:
+        a matrix object
+        """
         pass
+
+    def det(self):
+        """
+        Calculates determinant of matrix
+        Matrix must be square
+
+        Parameters:
+        self: a square matrix object
+
+        Returns:
+        an integer or float
+        """
+        if self.nrows == 2:
+            return self.content[0][0]*self.content[1][1] - self.content[0][1]*self.content[1][0]
+
+    def rem_col(self, ncol, inplace = False):
+        """
+        Remove column at specified ncol (1-indexed)
+        
+        Parameters:
+        self: a matrix object
+        ncol: 1-indexed column indice to remove
+        inplace: if True, modifies self object, otherwise return new matrix object
+
+        Returns:
+        a new matrix object if inplace = False,
+        nothing otherwise
+        """
+        if not inplace:
+            result = []
+            for y in range(self.nrows):
+                result.append([])
+                for x in range(self.ncols):
+                    if x+1 != ncol:
+                        result[y].append(self.content[y][x])
+            return makemat(result)
+
+        for x in range(self.nrows):
+            self.content[y].pop(ncol-1)
+
+    def rem_row(self, nrow, inplace = False):
+        """
+        Remove row at specified ncol
+
+        Parameters:
+        self: a matrix object
+        nrow: 1-indexed row indice to remove
+        inplace: if True, modifies self object, otherwise return new matrix object
+
+        Returns:
+        a new amtrix object if inplace = True,
+        nothing otherwise
+        """
+        pass
+
     def __str__(self) -> str:
         """
         Returns a string representation of a matrix object to view
@@ -183,3 +301,21 @@ class matrix():
         String representation of matrix object
         """
         return self.contents
+    
+    def __eq__(self, ob):
+        """
+        Checks equality between two objects
+        Equal if theya re both amtric objects and 
+        attribute .contents are also equal
+
+        Parameters:
+        self: a matrix object
+        ob: an object
+
+        Returns:
+        True if equal, otherwise False
+        """
+        if ob is None or not isinstance(ob, matrix):
+            return False
+        return self.content == ob.content
+
